@@ -100,22 +100,12 @@ print(word_frequencies)
 # Your code here:
 # -----------------------------------------------
 def token_counts(string_input: str, k: int = 1) -> dict:
-    # 1. Clean and tokenize the string (lowercase -> remove punctuation -> split)
-    s = string_input.lower()
-    translator = str.maketrans('', '', string.punctuation)
-    s = s.translate(translator)
-    tokens = s.split()
+    # 1. Tokenize the string
+    tokens = tokenize(string_input)
     
-    # 2. Count frequencies
-    counts = {}
-    for token in tokens:
-        counts[token] = counts.get(token, 0) + 1
-        
-    # 3. Filter dictionary to keep items where count >= k
-    # (We use >= because the tests expect 'quick' (count 1) to appear when k=1)
-    filtered_counts = {word: count for word, count in counts.items() if count >= k}
-    
-    return filtered_counts
+    # 2. Use a dictionary comprehension to count and filter
+    # We use >= k because the provided tests expect words with count 1 to be included when k=1
+    return {token: tokens.count(token) for token in set(tokens) if tokens.count(token) >= k}
 
 
 
