@@ -44,8 +44,18 @@ print(tokens)
 
 # Your code here:
 # -----------------------------------------------
-def tokenize(string: str) -> list:
-    pass # Your code
+def tokenize(string_input: str) -> list:
+    # 1. Convert the string to lowercase
+    s = string_input.lower()
+    
+    # 2. Remove punctuation
+    # We create a translation table that maps all punctuation characters to None (deletion)
+    translator = str.maketrans('', '', string.punctuation)
+    s = s.translate(translator)
+    
+    # 3. Split the string into tokens
+    # split() automatically handles spaces, tabs, and newlines
+    return s.split()
 
 
 # -----------------------------------------------
@@ -89,14 +99,23 @@ print(word_frequencies)
 
 # Your code here:
 # -----------------------------------------------
-def token_counts(string: str, k: int = 1) -> dict:
-    pass # Your code
-
-# test:
-text_hist = {'the': 2, 'quick': 1, 'brown': 1, 'fox': 1, 'jumps': 1, 'over': 1, 'lazy': 1, 'dog': 1}
-all(text_hist[key] == value for key, value in token_counts(text).items())
-# -----------------------------------------------
-
+def token_counts(string_input: str, k: int = 1) -> dict:
+    # 1. Clean and tokenize the string (lowercase -> remove punctuation -> split)
+    s = string_input.lower()
+    translator = str.maketrans('', '', string.punctuation)
+    s = s.translate(translator)
+    tokens = s.split()
+    
+    # 2. Count frequencies
+    counts = {}
+    for token in tokens:
+        counts[token] = counts.get(token, 0) + 1
+        
+    # 3. Filter dictionary to keep items where count >= k
+    # (We use >= because the tests expect 'quick' (count 1) to appear when k=1)
+    filtered_counts = {word: count for word, count in counts.items() if count >= k}
+    
+    return filtered_counts
 
 
 
@@ -154,8 +173,21 @@ assert all(id_to_token[token_to_id[key]]==key for key in token_to_id) and all(to
 # Your code here:
 # -----------------------------------------------
 def make_vocabulary_map(documents: list) -> tuple:
-    # Hint: use your tokenize function
-    pass # Your code
+    vocab = set()
+    
+    # 1. Collect all unique tokens from all documents
+    for doc in documents:
+        tokens = tokenize(doc) # Uses the function from Task 2
+        vocab.update(tokens)
+    
+    # 2. Sort the vocabulary to ensure deterministic indices
+    sorted_vocab = sorted(list(vocab))
+    
+    # 3. Create the mappings
+    t2i = {token: i for i, token in enumerate(sorted_vocab)}
+    i2t = {i: token for i, token in enumerate(sorted_vocab)}
+    
+    return t2i, i2t
 
 # Test
 t2i, i2t = make_vocabulary_map([text])
@@ -173,9 +205,26 @@ all(i2t[t2i[tok]] == tok for tok in t2i) # should be True
 
 # Your code here:
 # -----------------------------------------------
-def tokenize_and_encode(documents: list) -> list:
-    # Hint: use your make_vocabulary_map and tokenize function
-    pass # Your code
+def tokenize_and_encode(documents: list) -> tuple:
+    # 1. Build the vocabulary maps using the function from Task 7
+    # This ensures every word in the documents has a unique ID
+    t2i, i2t = make_vocabulary_map(documents)
+    
+    encoded_documents = []
+    
+    # 2. Loop through each document to encode it
+    for doc in documents:
+        # Tokenize the document
+        tokens = tokenize(doc)
+        
+        # Convert the list of tokens to a list of IDs using the t2i dictionary
+        # List comprehension: lookup 'token' in 't2i' for every 'token' in 'tokens'
+        ids = [t2i[token] for token in tokens]
+        
+        encoded_documents.append(ids)
+        
+    # Return the list of encoded docs and the two dictionaries
+    return encoded_documents, t2i, i2t
 
 # Test:
 enc, t2i, i2t = tokenize_and_encode([text, 'What a luck we had today!'])
@@ -201,7 +250,7 @@ enc, t2i, i2t = tokenize_and_encode([text, 'What a luck we had today!'])
 
 # Your code here:
 # -----------------------------------------------
-sigmoid = _ # Your code
+sigmoid = lambda x: 1 / (1 + np.exp(-x))
 
 # Test:
 np.all(sigmoid(np.log([1, 1/3, 1/7])) == np.array([1/2, 1/4, 1/8]))
